@@ -6,9 +6,9 @@
     FONT_SIZE: 1.6,
     FEATURED_FONT_SIZE: 2.4,
     FEATURED_CHANCE: 0.05,
-    /* 每 1.5 秒出现一条，同屏 12 条大约 18 秒铺满 */
+    /* 每 1.5 秒出现一条，同屏 25 条大约 37 秒铺满 */
     RETRY_MS: 1500,
-    MAX_ACTIVE_DANMAKU: 12,
+    MAX_ACTIVE_DANMAKU: 25,
     MODULE_PAUSE_MS: 1500,
     MODE_SWITCH_INTERVAL: 3,
     MODES: ['explode', 'bloom', 'float', 'pop', 'ripple'],
