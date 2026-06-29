@@ -17,7 +17,7 @@
     FEATURED_FONT_SIZE: 2.2,
     FEATURED_CHANCE: 0.05,
     RETRY_MS: 1500,
-    MAX_ACTIVE: 25,
+    MAX_ACTIVE: 35,
     MODULE_PAUSE_MS: 1500,
     DURATION: 8,            // 每条停留秒数
     FADE_START: 0.80,       // 80% 进度时开始淡出
@@ -196,8 +196,10 @@
       }
       case 'rise': {
         const cx = x + w / 2;
+        // 从底部 footer 上方开始升起，避免被 "同学们的心声" 栏挡住
+        const startY = Math.max(danmakuStage.clientHeight * 0.78, danmakuStage.clientHeight - 140);
         el.style.left = `${cx}px`;
-        el.style.top = `${danmakuStage.clientHeight + 30}px`;
+        el.style.top = `${startY}px`;
         el.style.transform = `translate(-50%, 0) scale(0.7)`;
         el.style.transformOrigin = 'center bottom';
         break;
