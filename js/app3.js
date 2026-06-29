@@ -1,16 +1,16 @@
 (function () {
   'use strict';
 
-  /* index3 特效大屏配置：所有弹幕从屏幕中心弹出，向四周扩散 */
+  /* index3 特效大屏配置：每批 4-5 条弹幕从屏幕不同位置弹出，向四周扩散 */
   const CFG = {
     FONT_SIZE: 1.6,
     FEATURED_FONT_SIZE: 2.4,
     FEATURED_CHANCE: 0.05,
-    /* 每 1.5 秒出现一批，每批 4-5 条；同屏 30 条约 9-11 秒铺满 */
+    /* 每 1.5 秒出现一批，每批 4-5 条；同屏 25 条约 7-9 秒铺满 */
     RETRY_MS: 1500,
     SPAWN_BATCH_MIN: 4,
     SPAWN_BATCH_MAX: 5,
-    MAX_ACTIVE_DANMAKU: 30,
+    MAX_ACTIVE_DANMAKU: 25,
     MODULE_PAUSE_MS: 1500,
     MODE_SWITCH_INTERVAL: 3,
     MODES: ['explode', 'bloom', 'float', 'pop', 'ripple'],
@@ -187,16 +187,36 @@
     return false;
   }
 
-  /* 通用：所有弹幕从屏幕中心弹出，再向四周扩散 */
-  function spawnAtCenter(mode, setupFn, angle) {
+  function computeRadius(width, height) {
+    return Math.max(width, height) * 0.55 + 50;
+  }
+
+  /* 随机找一个不重叠的屏幕位置 */
+  function pickRandomPosition(radius) {
+    const w = danmakuStage.clientWidth;
+    const h = danmakuStage.clientHeight;
+    const margin = 0.08;
+    let x, y;
+
+    for (let i = 0; i < 45; i++) {
+      x = rand(w * margin, w * (1 - margin));
+      y = rand(h * margin, h * (1 - margin));
+      if (!overlaps(x, y, radius)) return { x, y };
+    }
+
+    /* 如果实在找不到，也返回一个随机位置，避免卡死 */
+    return { x: rand(w * margin, w * (1 - margin)), y: rand(h * margin, h * (1 - margin)) };
+  }
+
+  /* 通用：在随机位置生成弹幕，再按角度向四周扩散 */
+  function spawnAtRandom(mode, setupFn, angle) {
     const base = createBaseDanmaku();
     if (!base) return false;
     const { el, isFeatured } = base;
 
-    const w = danmakuStage.clientWidth;
-    const h = danmakuStage.clientHeight;
-    const x = w / 2;
-    const y = h / 2;
+    const { width, height } = measureDanmaku(el);
+    const radius = computeRadius(width, height);
+    const { x, y } = pickRandomPosition(radius);
 
     nextComment();
     updateProgress();
@@ -207,13 +227,12 @@
     el.style.top = `${y}px`;
     el.style.animationDuration = `${duration}s`;
 
-    setupFn({ el, x, y, isFeatured, angle });
+    setupFn({ el, x, y, angle, isFeatured });
 
     danmakuStage.appendChild(el);
     if (isFeatured) featuredEl = el;
 
-    // 中心弹幕用较小占位半径，允许初始瞬间重叠，扩散后自然分开
-    addActiveBox({ el, x, y, radius: 20 });
+    addActiveBox({ el, x, y, radius });
 
     el.addEventListener('animationend', () => {
       if (featuredEl === el) featuredEl = null;
@@ -234,27 +253,27 @@
     };
   }
 
-  /* ---------- 爆炸扩散：从中心快速长大并向四周弹出 ---------- */
+  /* ---------- 爆炸扩散：随机位置快速长大并向外弹出 ---------- */
   function spawnExplode(angle) {
-    return spawnAtCenter('explode', ({ el, angle }) => {
+    return spawnAtRandom('explode', ({ el, angle }) => {
       const { tx, ty } = spreadByAngle(angle, 0.18, 0.38);
       el.style.setProperty('--tx', `${tx}px`);
       el.style.setProperty('--ty', `${ty}px`);
     }, angle);
   }
 
-  /* ---------- 轻柔绽放：从中心慢慢放大并向四周漂移 ---------- */
+  /* ---------- 轻柔绽放：随机位置慢慢放大并向外漂移 ---------- */
   function spawnBloom(angle) {
-    return spawnAtCenter('bloom', ({ el, angle }) => {
+    return spawnAtRandom('bloom', ({ el, angle }) => {
       const { tx, ty } = spreadByAngle(angle, 0.12, 0.28);
       el.style.setProperty('--tx', `${tx}px`);
       el.style.setProperty('--ty', `${ty}px`);
     }, angle);
   }
 
-  /* ---------- 随机漂浮：从中心沿角度向外小范围曲线漂浮 ---------- */
+  /* ---------- 随机漂浮：随机位置沿角度向外小范围曲线漂浮 ---------- */
   function spawnFloat(angle) {
-    return spawnAtCenter('float', ({ el, angle }) => {
+    return spawnAtRandom('float', ({ el, angle }) => {
       const scale = rand(0.75, 1.0);
       const distance = Math.min(danmakuStage.clientWidth, danmakuStage.clientHeight) * rand(0.15, 0.28);
       const baseX = Math.cos(angle);
@@ -272,18 +291,18 @@
     }, angle);
   }
 
-  /* ---------- 心跳弹出：从中心弹跳着向四周移动 ---------- */
+  /* ---------- 心跳弹出：随机位置弹跳着向外移动 ---------- */
   function spawnPop(angle) {
-    return spawnAtCenter('pop', ({ el, angle }) => {
+    return spawnAtRandom('pop', ({ el, angle }) => {
       const { tx, ty } = spreadByAngle(angle, 0.12, 0.25);
       el.style.setProperty('--tx', `${tx}px`);
       el.style.setProperty('--ty', `${ty}px`);
     }, angle);
   }
 
-  /* ---------- 波纹扩散：从中心向外放大扩散，无旋转 ---------- */
+  /* ---------- 波纹扩散：随机位置向外放大扩散，无旋转 ---------- */
   function spawnRipple(angle) {
-    return spawnAtCenter('ripple', ({ el, angle }) => {
+    return spawnAtRandom('ripple', ({ el, angle }) => {
       const { tx, ty } = spreadByAngle(angle, 0.15, 0.32);
       el.style.setProperty('--tx', `${tx}px`);
       el.style.setProperty('--ty', `${ty}px`);
