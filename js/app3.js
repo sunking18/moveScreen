@@ -120,15 +120,15 @@
     const sh = danmakuStage.clientHeight;
     const pad = { x: 50, y: 90 };
 
-    // 8 个垂直区域：左右两侧权重更高
+    // 8 个垂直区域：左右两侧权重更高，左侧起点往右移避免贴边遮挡
     const zones = [
-      { x0: pad.x, x1: sw * 0.28 - w },        // 左
-      { x0: pad.x, x1: sw * 0.28 - w },        // 左
-      { x0: sw * 0.12, x1: sw * 0.42 - w },    // 左中
+      { x0: sw * 0.10, x1: sw * 0.38 - w },    // 左（更靠右）
+      { x0: sw * 0.10, x1: sw * 0.38 - w },    // 左
+      { x0: sw * 0.22, x1: sw * 0.48 - w },    // 左中
       { x0: sw * 0.35, x1: sw * 0.65 - w },    // 中
-      { x0: sw * 0.58, x1: sw * 0.88 - w },    // 右中
-      { x0: sw * 0.72, x1: sw - pad.x - w },   // 右
-      { x0: sw * 0.72, x1: sw - pad.x - w },   // 右
+      { x0: sw * 0.52, x1: sw * 0.78 - w },    // 右中
+      { x0: sw * 0.62, x1: sw - pad.x - w },   // 右
+      { x0: sw * 0.62, x1: sw - pad.x - w },   // 右
       { x0: pad.x, x1: sw - pad.x - w },       // 全屏（兜底）
     ];
 
@@ -168,10 +168,11 @@
     const ratio = (x + w / 2) / sw;
 
     // 根据水平位置选入场方向：左右范围放宽，让左右滑入的弹幕更多
+    // 中间区域使用更多样化的动画效果
     let type;
-    if (ratio < 0.45) type = 'slide-left';
-    else if (ratio > 0.55) type = 'slide-right';
-    else type = ['rise', 'pop', 'float'][randInt(0, 2)];
+    if (ratio < 0.42) type = 'slide-left';
+    else if (ratio > 0.58) type = 'slide-right';
+    else type = ['rise', 'pop', 'float', 'fade-scale', 'drop', 'bounce'][randInt(0, 5)];
 
     el.classList.add(`enter-${type}`);
     el.style.animationDuration = `${CFG.DURATION}s`;
@@ -220,6 +221,33 @@
         el.style.top = `${cy}px`;
         el.style.transform = `translate(-50%, -50%) scale(0.55)`;
         el.style.transformOrigin = 'center center';
+        break;
+      }
+      case 'fade-scale': {
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        el.style.left = `${cx}px`;
+        el.style.top = `${cy}px`;
+        el.style.transform = `translate(-50%, -50%) scale(0.4)`;
+        el.style.transformOrigin = 'center center';
+        break;
+      }
+      case 'drop': {
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        el.style.left = `${cx}px`;
+        el.style.top = `${cy}px`;
+        el.style.transform = `translate(-50%, -180%) scale(0.85)`;
+        el.style.transformOrigin = 'center top';
+        break;
+      }
+      case 'bounce': {
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        el.style.left = `${cx}px`;
+        el.style.top = `${cy}px`;
+        el.style.transform = `translate(-50%, -50%) scale(0)`;
+        el.style.transformOrigin = 'center bottom';
         break;
       }
     }
