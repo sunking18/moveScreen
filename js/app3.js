@@ -172,7 +172,7 @@
     let type;
     if (ratio < 0.42) type = 'slide-left';
     else if (ratio > 0.58) type = 'slide-right';
-    else type = ['rise', 'pop', 'float', 'fade-scale', 'drop', 'bounce'][randInt(0, 5)];
+    else type = ['rise', 'pop', 'float', 'fade-scale', 'drop', 'bounce', 'explode', 'rotate-slow', 'pop-big'][randInt(0, 8)];
 
     el.classList.add(`enter-${type}`);
     el.style.animationDuration = `${CFG.DURATION}s`;
@@ -248,6 +248,33 @@
         el.style.top = `${cy}px`;
         el.style.transform = `translate(-50%, -50%) scale(0)`;
         el.style.transformOrigin = 'center bottom';
+        break;
+      }
+      case 'explode': {
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        el.style.left = `${cx}px`;
+        el.style.top = `${cy}px`;
+        el.style.transform = `translate(-50%, -50%) scale(0)`;
+        el.style.transformOrigin = 'center center';
+        break;
+      }
+      case 'rotate-slow': {
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        el.style.left = `${cx}px`;
+        el.style.top = `${cy}px`;
+        el.style.transform = `translate(-50%, -50%) scale(0.6) rotate(-8deg)`;
+        el.style.transformOrigin = 'center center';
+        break;
+      }
+      case 'pop-big': {
+        const cx = x + w / 2;
+        const cy = y + h / 2;
+        el.style.left = `${cx}px`;
+        el.style.top = `${cy}px`;
+        el.style.transform = `translate(-50%, -50%) scale(0.2)`;
+        el.style.transformOrigin = 'center center';
         break;
       }
     }
