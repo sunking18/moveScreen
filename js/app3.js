@@ -6,8 +6,10 @@
     FONT_SIZE: 1.6,
     FEATURED_FONT_SIZE: 2.4,
     FEATURED_CHANCE: 0.05,
-    /* 每 1.5 秒出现一条，同屏 25 条大约 37 秒铺满 */
+    /* 每 1.5 秒出现一批，每批 2-3 条；同屏 25 条约 12-18 秒铺满 */
     RETRY_MS: 1500,
+    SPAWN_BATCH_MIN: 2,
+    SPAWN_BATCH_MAX: 3,
     MAX_ACTIVE_DANMAKU: 25,
     MODULE_PAUSE_MS: 1500,
     MODE_SWITCH_INTERVAL: 3,
@@ -30,11 +32,11 @@
       { bg: 'rgba(240, 242, 255, 0.92)', color: '#5a6fb8', border: '#b8c8ff' },
     ],
     DURATION: {
-      explode: { min: 4, max: 6.5 },
-      bloom: { min: 5, max: 8 },
-      float: { min: 10, max: 14 },
-      pop: { min: 4.5, max: 7 },
-      ripple: { min: 5, max: 8 },
+      explode: { min: 6, max: 8.5 },
+      bloom: { min: 7, max: 10 },
+      float: { min: 12, max: 16 },
+      pop: { min: 6.5, max: 9 },
+      ripple: { min: 7, max: 10 },
     },
   };
 
@@ -365,7 +367,11 @@
           danmakuTimer = setTimeout(tick, 500);
           return;
         }
-        spawnDanmaku();
+        const batch = randInt(CFG.SPAWN_BATCH_MIN, CFG.SPAWN_BATCH_MAX);
+        for (let i = 0; i < batch; i++) {
+          if (activeDanmakuCount() >= CFG.MAX_ACTIVE_DANMAKU) break;
+          spawnDanmaku();
+        }
         danmakuTimer = setTimeout(tick, CFG.RETRY_MS);
       } else {
         checkModuleComplete();
