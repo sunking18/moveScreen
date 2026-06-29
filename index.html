@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>这是我们的 MAP · 毕业留言大屏</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="screen">
+    <div class="bg-layer"></div>
+    <div class="particles" id="particles"></div>
+
+    <header class="header">
+      <div class="logo">这是我们的 MAP · 毕业留言大屏</div>
+      <div class="module-indicator">
+        <span class="dot active" data-index="0"></span>
+        <span class="dot" data-index="1"></span>
+        <span class="dot" data-index="2"></span>
+      </div>
+      <div class="timer" id="timer">01:00</div>
+    </header>
+
+    <main class="main">
+      <section class="question-panel" id="questionPanel">
+        <h1 class="question-text" id="questionText"></h1>
+      </section>
+
+      <div class="danmaku-stage" id="danmakuStage"></div>
+    </main>
+
+    <footer class="footer">
+      <span>同学们的心声 · 滚动播放中</span>
+    </footer>
+  </div>
+
+  <script src="js/data.js?v=2"></script>
+  <script src="js/app.js?v=2"></script>
+</body>
+</html>
