@@ -1,0 +1,353 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.screen {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 深色动态背景 */
+.bg-layer {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 15%, rgba(99, 102, 241, 0.22) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 85%, rgba(236, 72, 153, 0.18) 0%, transparent 58%),
+    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(14, 165, 233, 0.12) 0%, transparent 65%),
+    linear-gradient(158deg, #0f172a 0%, #1e1b4b 42%, #312e81 100%);
+  z-index: 0;
+  animation: bg-shift 20s ease-in-out infinite alternate;
+}
+
+@keyframes bg-shift {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(25deg); }
+}
+
+.particles {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+  animation: float-up linear infinite;
+}
+
+@keyframes float-up {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
+/* 顶栏 */
+.header {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem 2.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #fbbf24;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+}
+
+.module-indicator {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  transition: all 0.5s ease;
+}
+
+.dot.active {
+  background: #f59e0b;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
+  transform: scale(1.3);
+}
+
+.timer {
+  font-size: 1.4rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  color: rgba(226, 232, 240, 0.85);
+  letter-spacing: 0.05em;
+}
+
+/* 主内容 */
+.main {
+  position: relative;
+  flex: 1;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.question-panel {
+  padding: 2rem 3rem 1.5rem;
+  text-align: center;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.question-panel.fade-out {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.question-text {
+  font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+  font-weight: 600;
+  line-height: 1.5;
+  color: #f8fafc;
+  text-shadow: 0 0 24px rgba(99, 102, 241, 0.5);
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+/* 弹幕舞台 */
+.danmaku-stage {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+
+.danmaku-item {
+  position: absolute;
+  left: 0;
+  white-space: nowrap;
+  font-weight: 500;
+  pointer-events: none;
+  will-change: transform, opacity;
+  padding: 0.45em 1.2em;
+  border-radius: 2em;
+  line-height: 1.4;
+  border: 2px solid transparent;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 滚动模式 */
+.danmaku-item.mode-scroll {
+  animation: danmaku-scroll linear forwards;
+}
+
+@keyframes danmaku-scroll {
+  from { transform: translateX(100vw); }
+  to { transform: translateX(calc(-100% - 20px)); }
+}
+
+/* 爆炸模式 */
+.danmaku-item.mode-explode {
+  opacity: 0;
+  animation: danmaku-explode ease-out forwards;
+}
+
+@keyframes danmaku-explode {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.1) rotate(0deg);
+  }
+  8% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2) rotate(var(--rotate-mid, 10deg));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+      calc(-50% + var(--tx, 400px)),
+      calc(-50% + var(--ty, -200px))
+    ) scale(0.6) rotate(var(--rotate-end, 30deg));
+  }
+}
+
+/* 随机漂浮模式 */
+.danmaku-item.mode-float {
+  opacity: 0;
+  animation: danmaku-float ease-in-out forwards;
+}
+
+@keyframes danmaku-float {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  10% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  25% {
+    transform: translate(
+      calc(-50% + var(--tx-a, 120px)),
+      calc(-50% + var(--ty-a, -80px))
+    ) scale(1) rotate(var(--rot-a, 5deg));
+  }
+  50% {
+    transform: translate(
+      calc(-50% + var(--tx-b, -100px)),
+      calc(-50% + var(--ty-b, 60px))
+    ) scale(0.95) rotate(var(--rot-b, -5deg));
+  }
+  75% {
+    opacity: 0.85;
+    transform: translate(
+      calc(-50% + var(--tx-c, 80px)),
+      calc(-50% + var(--ty-c, 100px))
+    ) scale(0.9) rotate(var(--rot-c, 8deg));
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+      calc(-50% + var(--tx-d, -60px)),
+      calc(-50% + var(--ty-d, -40px))
+    ) scale(0.7) rotate(var(--rot-d, -10deg));
+  }
+}
+
+/* 弹出模式 */
+.danmaku-item.mode-pop {
+  opacity: 0;
+  animation: danmaku-pop cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes danmaku-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.25) rotate(5deg);
+  }
+  45% {
+    transform: translate(-50%, -50%) scale(0.95) rotate(-2deg);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.05) rotate(2deg);
+  }
+  75% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.85) rotate(0deg);
+  }
+}
+
+/* 精选弹幕 */
+.danmaku-item.danmaku-featured {
+  font-weight: 700;
+  z-index: 30;
+  background: linear-gradient(135deg, rgba(255, 252, 245, 0.98), rgba(255, 243, 220, 0.98));
+  border: 2px solid #f0d8a8;
+  color: #a08050;
+  box-shadow:
+    0 0 24px rgba(240, 200, 140, 0.35),
+    0 4px 18px rgba(0, 0, 0, 0.12);
+}
+
+.danmaku-featured.mode-scroll {
+  animation: danmaku-scroll linear forwards, featured-glow 2.5s ease-in-out infinite alternate;
+}
+
+.danmaku-featured.mode-explode {
+  animation: danmaku-explode ease-out forwards, featured-glow 2.5s ease-in-out infinite alternate;
+}
+
+.danmaku-featured.mode-float {
+  animation: danmaku-float ease-in-out forwards, featured-glow 2.5s ease-in-out infinite alternate;
+}
+
+.danmaku-featured.mode-pop {
+  animation: danmaku-pop cubic-bezier(0.34, 1.56, 0.64, 1) forwards, featured-glow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes featured-glow {
+  from { box-shadow: 0 0 16px rgba(240, 200, 140, 0.25), 0 3px 12px rgba(0, 0, 0, 0.08); }
+  to { box-shadow: 0 0 32px rgba(240, 200, 140, 0.45), 0 3px 18px rgba(0, 0, 0, 0.12); }
+}
+
+/* 模式指示器 */
+.mode-indicator {
+  position: absolute;
+  right: 2rem;
+  bottom: 4rem;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: 1rem;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.4s ease;
+}
+
+.mode-label {
+  font-size: 0.75rem;
+  color: rgba(226, 232, 240, 0.6);
+  letter-spacing: 0.1em;
+}
+
+.mode-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+}
+
+/* 底部 */
+.footer {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 0.8rem;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.5);
+  letter-spacing: 0.2em;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.55);
+}
