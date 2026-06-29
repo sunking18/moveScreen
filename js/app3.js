@@ -4,24 +4,20 @@
   /* index3 特效大屏：弹幕走马灯
    *
    * 视觉设计：
-   * - 弹幕分三路（左 / 中 / 右）从不同方向入场
-   * - 左路：从左侧滑入，停在左半屏
-   * - 中路：从底部升起或在中心弹出
-   * - 右路：从右侧滑入，停在右半屏
-   * - 每条停留 8 秒，每 1.5 秒出一条，同屏最多 25 条
-   * - 彩色渐变卡片 + 发光拖尾 + 无旋转
+   * - 弹幕从屏幕各处随机入场，入场后持续运动，不会定格
+   * - 1 秒弹出一个，每个动画效果随机
+   * - 每条可见 8 秒，同屏最多 35 条
+   * - 彩色渐变卡片 + 发光拖尾
    */
 
   const CFG = {
     FONT_SIZE: 1.55,
     FEATURED_FONT_SIZE: 2.2,
     FEATURED_CHANCE: 0.05,
-    RETRY_MS: 1500,
+    RETRY_MS: 1000,         // 1 秒弹出一个
     MAX_ACTIVE: 35,
     MODULE_PAUSE_MS: 1500,
-    DURATION: 8,            // 每条停留秒数
-    ENTER_DURATION: 1.2,    // 入场动画秒数
-    FADE_START: 0.80,       // 80% 进度时开始淡出
+    DURATION: 8,            // 每条可见秒数
     PALETTE_COUNT: 8,
   };
 
@@ -165,120 +161,49 @@
   /* ===== 入场动画 ===== */
 
   function assignEnter(el, x, y, w, h) {
-    const sw = danmakuStage.clientWidth;
-    const ratio = (x + w / 2) / sw;
+    const cx = x + w / 2;
+    const cy = y + h / 2;
 
-    // 根据水平位置选入场方向：左右范围放宽，让左右滑入的弹幕更多
-    // 中间区域使用更多样化的动画效果
-    let type;
-    if (ratio < 0.42) type = 'slide-left';
-    else if (ratio > 0.58) type = 'slide-right';
-    else type = ['rise', 'pop', 'float', 'fade-scale', 'drop', 'bounce', 'explode', 'rotate-slow', 'pop-big'][randInt(0, 8)];
+    // 所有动画效果完全随机出现
+    const types = ['rise', 'slide-left', 'slide-right', 'pop', 'float', 'fade-scale', 'drop', 'bounce', 'explode', 'rotate-slow', 'pop-big'];
+    const type = types[randInt(0, types.length - 1)];
 
     el.classList.add(`enter-${type}`);
-    el.style.animationDuration = `${CFG.ENTER_DURATION}s`;
+    el.style.animationDuration = `${CFG.DURATION}s`;
 
-    // 设置初始 transform（动画起点）
-    switch (type) {
-      case 'slide-left': {
-        const cy = y + h / 2;
-        el.style.left = `${x}px`;
-        el.style.top = `${cy}px`;
-        el.style.transform = `translate(-120%, -50%) scale(0.75)`;
-        el.style.transformOrigin = 'center center';
-        break;
-      }
-      case 'slide-right': {
-        const cy = y + h / 2;
-        el.style.left = `${x}px`;
-        el.style.top = `${cy}px`;
-        el.style.transform = `translate(120%, -50%) scale(0.75)`;
-        el.style.transformOrigin = 'center center';
-        break;
-      }
-      case 'rise': {
-        const cx = x + w / 2;
-        // 从底部 footer 上方开始升起，避免被 "同学们的心声" 栏挡住
-        const startY = Math.max(danmakuStage.clientHeight * 0.78, danmakuStage.clientHeight - 140);
-        el.style.left = `${cx}px`;
-        el.style.top = `${startY}px`;
-        el.style.transform = `translate(-50%, 0) scale(0.7)`;
-        el.style.transformOrigin = 'center bottom';
-        break;
-      }
-      case 'pop': {
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        el.style.left = `${cx}px`;
-        el.style.top = `${cy}px`;
-        el.style.transform = `translate(-50%, -50%) scale(0)`;
-        el.style.transformOrigin = 'center center';
-        break;
-      }
-      case 'float': {
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        el.style.left = `${cx}px`;
-        el.style.top = `${cy}px`;
-        el.style.transform = `translate(-50%, -50%) scale(0.55)`;
-        el.style.transformOrigin = 'center center';
-        break;
-      }
-      case 'fade-scale': {
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        el.style.left = `${cx}px`;
-        el.style.top = `${cy}px`;
-        el.style.transform = `translate(-50%, -50%) scale(0.4)`;
-        el.style.transformOrigin = 'center center';
-        break;
-      }
-      case 'drop': {
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        el.style.left = `${cx}px`;
-        el.style.top = `${cy}px`;
-        el.style.transform = `translate(-50%, -180%) scale(0.85)`;
-        el.style.transformOrigin = 'center top';
-        break;
-      }
-      case 'bounce': {
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        el.style.left = `${cx}px`;
-        el.style.top = `${cy}px`;
-        el.style.transform = `translate(-50%, -50%) scale(0)`;
-        el.style.transformOrigin = 'center bottom';
-        break;
-      }
-      case 'explode': {
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        el.style.left = `${cx}px`;
-        el.style.top = `${cy}px`;
-        el.style.transform = `translate(-50%, -50%) scale(0)`;
-        el.style.transformOrigin = 'center center';
-        break;
-      }
-      case 'rotate-slow': {
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        el.style.left = `${cx}px`;
-        el.style.top = `${cy}px`;
-        el.style.transform = `translate(-50%, -50%) scale(0.6) rotate(-8deg)`;
-        el.style.transformOrigin = 'center center';
-        break;
-      }
-      case 'pop-big': {
-        const cx = x + w / 2;
-        const cy = y + h / 2;
-        el.style.left = `${cx}px`;
-        el.style.top = `${cy}px`;
-        el.style.transform = `translate(-50%, -50%) scale(0.2)`;
-        el.style.transformOrigin = 'center center';
-        break;
-      }
-    }
+    // 统一以目标中心点定位
+    el.style.left = `${cx}px`;
+    el.style.top = `${cy}px`;
+
+    const origins = {
+      'rise': 'center bottom',
+      'slide-left': 'center center',
+      'slide-right': 'center center',
+      'pop': 'center center',
+      'float': 'center center',
+      'fade-scale': 'center center',
+      'drop': 'center top',
+      'bounce': 'center bottom',
+      'explode': 'center center',
+      'rotate-slow': 'center center',
+      'pop-big': 'center center',
+    };
+    el.style.transformOrigin = origins[type];
+
+    const starts = {
+      'rise': 'translate(-50%, 120%) scale(0.7)',
+      'slide-left': 'translate(-120%, -50%) scale(0.8)',
+      'slide-right': 'translate(120%, -50%) scale(0.8)',
+      'pop': 'translate(-50%, -50%) scale(0)',
+      'float': 'translate(-50%, -50%) scale(0.55)',
+      'fade-scale': 'translate(-50%, -50%) scale(0.4)',
+      'drop': 'translate(-50%, -180%) scale(0.85)',
+      'bounce': 'translate(-50%, -50%) scale(0)',
+      'explode': 'translate(-50%, -50%) scale(0)',
+      'rotate-slow': 'translate(-50%, -50%) scale(0.6) rotate(-8deg)',
+      'pop-big': 'translate(-50%, -50%) scale(0.2)',
+    };
+    el.style.transform = starts[type];
 
     // 触发拖尾
     setTimeout(() => el.classList.add('entering'), 60);
@@ -309,20 +234,9 @@
     if (isFeatured) featuredEl = el;
     track(el, x, y, w, h);
 
-    // 淡出阶段
-    const fadeAfter = CFG.DURATION * 1000 * CFG.FADE_START;
+    // 8 秒后清理 + 检查是否全部完成（淡出由 CSS keyframes 控制）
     const total = CFG.DURATION * 1000;
-    const fadeTimer = setTimeout(() => {
-      if (el.parentNode) {
-        el.style.transition = 'opacity 1.5s ease, filter 1.5s ease';
-        el.style.opacity = '0';
-        el.style.filter = 'blur(2px)';
-      }
-    }, fadeAfter);
-
-    // 结束：清理 + 检查是否全部完成
     const endTimer = setTimeout(() => {
-      clearTimeout(fadeTimer);
       if (featuredEl === el) featuredEl = null;
       untrack(el);
       if (el.parentNode) el.remove();
