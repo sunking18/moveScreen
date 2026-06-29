@@ -167,16 +167,6 @@ html, body {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-/* 滚动模式 */
-.danmaku-item.mode-scroll {
-  animation: danmaku-scroll linear forwards;
-}
-
-@keyframes danmaku-scroll {
-  from { transform: translateX(100vw); }
-  to { transform: translateX(calc(-100% - 20px)); }
-}
-
 /* 爆炸模式 */
 .danmaku-item.mode-explode {
   opacity: 0;
@@ -285,10 +275,6 @@ html, body {
   box-shadow:
     0 0 24px rgba(240, 200, 140, 0.35),
     0 4px 18px rgba(0, 0, 0, 0.12);
-}
-
-.danmaku-featured.mode-scroll {
-  animation: danmaku-scroll linear forwards, featured-glow 2.5s ease-in-out infinite alternate;
 }
 
 .danmaku-featured.mode-explode {
