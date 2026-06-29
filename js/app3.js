@@ -20,6 +20,7 @@
     MAX_ACTIVE: 35,
     MODULE_PAUSE_MS: 1500,
     DURATION: 8,            // 每条停留秒数
+    ENTER_DURATION: 1.2,    // 入场动画秒数
     FADE_START: 0.80,       // 80% 进度时开始淡出
     PALETTE_COUNT: 8,
   };
@@ -175,7 +176,7 @@
     else type = ['rise', 'pop', 'float', 'fade-scale', 'drop', 'bounce', 'explode', 'rotate-slow', 'pop-big'][randInt(0, 8)];
 
     el.classList.add(`enter-${type}`);
-    el.style.animationDuration = `${CFG.DURATION}s`;
+    el.style.animationDuration = `${CFG.ENTER_DURATION}s`;
 
     // 设置初始 transform（动画起点）
     switch (type) {
