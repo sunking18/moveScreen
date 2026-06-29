@@ -1,26 +1,25 @@
 (function () {
   'use strict';
 
-  /* index3 特效大屏配置 */
+  /* index3 特效大屏配置：所有弹幕从中心生长并向周边扩散 */
   const CFG = {
-    FONT_SIZE: 1.8,
-    FEATURED_FONT_SIZE: 2.6,
+    FONT_SIZE: 1.6,
+    FEATURED_FONT_SIZE: 2.4,
     FEATURED_CHANCE: 0.05,
-    RETRY_MS: 3000,
-    /* 同屏最多同时存在的弹幕数量，避免拥挤 */
-    MAX_ACTIVE_DANMAKU: 6,
+    /* 每 2 秒出现一条，同屏 12 条大约 24 秒铺满 */
+    RETRY_MS: 2000,
+    MAX_ACTIVE_DANMAKU: 12,
     MODULE_PAUSE_MS: 1500,
-    /* 每隔多少条弹幕切换一次特效模式 */
+    /* 每 3 条弹幕切换一次特效模式 */
     MODE_SWITCH_INTERVAL: 3,
-    /* 特效模式列表（已去掉滚动瀑布） */
-    MODES: ['explode', 'float', 'pop'],
-    /* 模式显示名称 */
+    MODES: ['explode', 'bloom', 'float', 'pop', 'spiral'],
     MODE_NAMES: {
       explode: '爆炸飞散',
+      bloom: '中心绽放',
       float: '随机漂浮',
       pop: '心跳弹出',
+      spiral: '螺旋飞散',
     },
-    /* 马卡龙浅色：白底 + pastel 边框 */
     DANMAKU_PALETTE: [
       { bg: 'rgba(255, 235, 235, 0.92)', color: '#c25b5b', border: '#ffb3b3' },
       { bg: 'rgba(235, 245, 255, 0.92)', color: '#4a7fb5', border: '#a3d0ff' },
@@ -31,11 +30,12 @@
       { bg: 'rgba(230, 255, 255, 0.92)', color: '#3a8f9b', border: '#a3f0f5' },
       { bg: 'rgba(240, 242, 255, 0.92)', color: '#5a6fb8', border: '#b8c8ff' },
     ],
-    /* 各模式持续时间配置（秒），整体放慢让人能看完 */
     DURATION: {
       explode: { min: 5, max: 8 },
-      float: { min: 11, max: 16 },
-      pop: { min: 5.5, max: 8 },
+      bloom: { min: 5.5, max: 8.5 },
+      float: { min: 12, max: 17 },
+      pop: { min: 5, max: 7.5 },
+      spiral: { min: 7, max: 11 },
     },
   };
 
@@ -55,7 +55,6 @@
   let switchingModule = false;
   let currentModeIndex = 0;
   let spawnCounter = 0;
-  /* 记录舞台上每个弹幕的空间占位信息，用于避免重叠 */
   let activeBoxes = [];
 
   function rand(min, max) {
@@ -64,10 +63,6 @@
 
   function randInt(min, max) {
     return Math.floor(rand(min, max + 1));
-  }
-
-  function randChoice(arr) {
-    return arr[randInt(0, arr.length - 1)];
   }
 
   function shuffle(arr) {
@@ -153,6 +148,13 @@
     return { el, isFeatured, text };
   }
 
+  function getCenter() {
+    return {
+      cx: danmakuStage.clientWidth * 0.5,
+      cy: danmakuStage.clientHeight * 0.5,
+    };
+  }
+
   function getCurrentMode() {
     return CFG.MODES[currentModeIndex];
   }
@@ -160,8 +162,7 @@
   function updateModeIndicator() {
     const mode = getCurrentMode();
     modeNameEl.textContent = CFG.MODE_NAMES[mode];
-    modeNameEl.parentElement.classList.remove('mode-explode', 'mode-float', 'mode-pop');
-    modeNameEl.parentElement.classList.add(`mode-${mode}`);
+    modeNameEl.parentElement.className = 'mode-indicator';
   }
 
   function maybeSwitchMode() {
@@ -173,7 +174,7 @@
     }
   }
 
-  /* ---------- 空间占位管理：防止弹幕重叠 ---------- */
+  /* 空间占位管理：记录每个弹幕的位置/半径/角度，防止中心弹幕拥挤 */
   function addActiveBox(box) {
     activeBoxes.push(box);
   }
@@ -182,216 +183,180 @@
     activeBoxes = activeBoxes.filter((b) => b.el !== el);
   }
 
-  /* 检查候选位置是否会与现有弹幕重叠 */
-  function overlaps(x, y, radius, mode) {
+  function overlaps(x, y, radius) {
     for (const box of activeBoxes) {
       const dx = x - box.x;
       const dy = y - box.y;
       const distance = Math.sqrt(dx * dx + dy * dy);
-      const safeDistance = radius + box.radius;
-      if (distance < safeDistance) return true;
+      if (distance < radius + box.radius) return true;
     }
     return false;
   }
 
-  /* 安全区：给爆炸弹幕更大的运动空间，给漂浮/弹出也留足边距 */
-  function computeRadius(width, height, mode) {
-    const base = Math.max(width, height) * 0.55;
-    switch (mode) {
-      case 'explode': return base + 160;
-      case 'float': return base + 90;
-      case 'pop': return base + 90;
-      default: return base + 80;
-    }
+  function computeRadius(width, height) {
+    return Math.max(width, height) * 0.55 + 60;
   }
 
-  /* ---------- 模式：爆炸飞散 ---------- */
+  /* 所有效果都从中心出发，按角度错开，避免同时长在同一方向 */
+  function pickAngle(radius) {
+    const centerBoxes = activeBoxes.filter((b) => b.fromCenter);
+    const minAngleGap = Math.max(0.35, Math.min(0.85, 1.5 - radius / 500));
+
+    for (let i = 0; i < 36; i++) {
+      const angle = rand(0, Math.PI * 2);
+      let ok = true;
+      for (const box of centerBoxes) {
+        const diff = Math.abs(angle - box.angle);
+        const normalized = Math.min(diff, Math.PI * 2 - diff);
+        if (normalized < minAngleGap) {
+          ok = false;
+          break;
+        }
+      }
+      if (ok) return angle;
+    }
+    return rand(0, Math.PI * 2);
+  }
+
+  function spawnFromCenter(mode, setupFn) {
+    const base = createBaseDanmaku();
+    if (!base) return false;
+    const { el, isFeatured } = base;
+
+    const { cx, cy } = getCenter();
+    const { width, height } = measureDanmaku(el);
+    const radius = computeRadius(width, height);
+    const angle = pickAngle(radius);
+
+    const distance = Math.min(danmakuStage.clientWidth, danmakuStage.clientHeight);
+
+    nextComment();
+    updateProgress();
+
+    const duration = rand(CFG.DURATION[mode].min, CFG.DURATION[mode].max);
+    el.classList.add(`mode-${mode}`);
+    el.style.left = `${cx}px`;
+    el.style.top = `${cy}px`;
+    el.style.animationDuration = `${duration}s`;
+
+    setupFn({ el, cx, cy, angle, distance, radius, isFeatured });
+
+    danmakuStage.appendChild(el);
+    if (isFeatured) featuredEl = el;
+
+    addActiveBox({ el, x: cx, y: cy, radius, angle, fromCenter: true });
+
+    el.addEventListener('animationend', () => {
+      if (featuredEl === el) featuredEl = null;
+      removeActiveBox(el);
+      el.remove();
+      checkModuleComplete();
+    });
+
+    return true;
+  }
+
+  /* ---------- 爆炸飞散：从中心快速向四周炸开 ---------- */
   function spawnExplode() {
-    const base = createBaseDanmaku();
-    if (!base) return false;
-    const { el, isFeatured } = base;
-
-    const stageWidth = danmakuStage.clientWidth;
-    const stageHeight = danmakuStage.clientHeight;
-    const { width, height } = measureDanmaku(el);
-    const radius = computeRadius(width, height, 'explode');
-
-    /* 爆炸弹幕从中心出发，但每个方向错开，避免多个弹幕挤在同一处 */
-    let cx = stageWidth * 0.5;
-    let cy = stageHeight * 0.5;
-    let angle = rand(0, Math.PI * 2);
-    let distance = Math.min(stageWidth, stageHeight) * rand(0.35, 0.55);
-    let tx = Math.cos(angle) * distance;
-    let ty = Math.sin(angle) * distance;
-
-    /* 尝试找一个与其他弹幕不冲突的方向/距离，如果舞台太满就接受轻微重叠 */
-    let ok = false;
-    for (let i = 0; i < 30; i++) {
-      angle = rand(0, Math.PI * 2);
-      distance = Math.min(stageWidth, stageHeight) * rand(0.35, 0.55);
-      tx = Math.cos(angle) * distance;
-      ty = Math.sin(angle) * distance;
-      const sampleX = cx + tx * 0.4;
-      const sampleY = cy + ty * 0.4;
-      if (!overlaps(sampleX, sampleY, radius, 'explode')) {
-        ok = true;
-        break;
-      }
-    }
-
-    nextComment();
-    updateProgress();
-
-    const duration = rand(CFG.DURATION.explode.min, CFG.DURATION.explode.max);
-    const rotateMid = rand(-25, 25);
-    const rotateEnd = rand(-60, 60);
-
-    el.classList.add('mode-explode');
-    el.style.left = `${cx}px`;
-    el.style.top = `${cy}px`;
-    el.style.setProperty('--tx', `${tx}px`);
-    el.style.setProperty('--ty', `${ty}px`);
-    el.style.setProperty('--rotate-mid', `${rotateMid}deg`);
-    el.style.setProperty('--rotate-end', `${rotateEnd}deg`);
-    el.style.animationDuration = `${duration}s`;
-
-    danmakuStage.appendChild(el);
-    if (isFeatured) featuredEl = el;
-
-    addActiveBox({ el, x: cx + tx * 0.4, y: cy + ty * 0.4, radius });
-
-    el.addEventListener('animationend', () => {
-      if (featuredEl === el) featuredEl = null;
-      removeActiveBox(el);
-      el.remove();
-      checkModuleComplete();
+    return spawnFromCenter('explode', ({ el, angle, distance }) => {
+      const fly = distance * rand(0.35, 0.55);
+      const tx = Math.cos(angle) * fly;
+      const ty = Math.sin(angle) * fly;
+      el.style.setProperty('--tx', `${tx}px`);
+      el.style.setProperty('--ty', `${ty}px`);
+      el.style.setProperty('--rotate-mid', `${rand(-25, 25)}deg`);
+      el.style.setProperty('--rotate-end', `${rand(-60, 60)}deg`);
     });
-
-    return true;
   }
 
-  /* ---------- 模式：随机漂浮 ---------- */
+  /* ---------- 中心绽放：从中心慢慢放大并向外漂移 ---------- */
+  function spawnBloom() {
+    return spawnFromCenter('bloom', ({ el, angle, distance }) => {
+      const drift = distance * rand(0.18, 0.32);
+      const tx = Math.cos(angle) * drift;
+      const ty = Math.sin(angle) * drift;
+      el.style.setProperty('--tx', `${tx}px`);
+      el.style.setProperty('--ty', `${ty}px`);
+    });
+  }
+
+  /* ---------- 随机漂浮：从中心向外沿随机曲线路径漂浮 ---------- */
   function spawnFloat() {
-    const base = createBaseDanmaku();
-    if (!base) return false;
-    const { el, isFeatured } = base;
+    return spawnFromCenter('float', ({ el, angle, distance }) => {
+      const scale = rand(0.6, 1.0);
+      const base = distance * 0.5;
 
-    const stageWidth = danmakuStage.clientWidth;
-    const stageHeight = danmakuStage.clientHeight;
-    const { width, height } = measureDanmaku(el);
-    const radius = computeRadius(width, height, 'float');
+      const mk = (ratio, range) => {
+        const a = angle + rand(-0.5, 0.5);
+        const r = base * ratio + rand(-range, range);
+        return { x: Math.cos(a) * r, y: Math.sin(a) * r };
+      };
 
-    /* 在舞台内随机找不重叠的位置 */
-    let startX = rand(stageWidth * 0.2, stageWidth * 0.8);
-    let startY = rand(stageHeight * 0.15, stageHeight * 0.75);
-    let found = false;
-    for (let i = 0; i < 40; i++) {
-      startX = rand(stageWidth * 0.15, stageWidth * 0.85);
-      startY = rand(stageHeight * 0.12, stageHeight * 0.78);
-      if (!overlaps(startX, startY, radius, 'float')) {
-        found = true;
-        break;
-      }
-    }
+      const p1 = mk(0.25, 60);
+      const p2 = mk(0.55, 90);
+      const p3 = mk(0.85, 80);
+      const p4 = mk(1.1, 70);
 
-    nextComment();
-    updateProgress();
-
-    const duration = rand(CFG.DURATION.float.min, CFG.DURATION.float.max);
-    const scale = rand(0.6, 1.0);
-    el.style.setProperty('--tx-a', `${rand(-120, 120) * scale}px`);
-    el.style.setProperty('--ty-a', `${rand(-100, -40) * scale}px`);
-    el.style.setProperty('--rot-a', `${rand(-12, 12)}deg`);
-    el.style.setProperty('--tx-b', `${rand(-160, 160) * scale}px`);
-    el.style.setProperty('--ty-b', `${rand(-60, 100) * scale}px`);
-    el.style.setProperty('--rot-b', `${rand(-15, 15)}deg`);
-    el.style.setProperty('--tx-c', `${rand(-120, 180) * scale}px`);
-    el.style.setProperty('--ty-c', `${rand(40, 140) * scale}px`);
-    el.style.setProperty('--rot-c', `${rand(-12, 12)}deg`);
-    el.style.setProperty('--tx-d', `${rand(-100, 100) * scale}px`);
-    el.style.setProperty('--ty-d', `${rand(-60, 80) * scale}px`);
-    el.style.setProperty('--rot-d', `${rand(-20, 20)}deg`);
-
-    el.classList.add('mode-float');
-    el.style.left = `${startX}px`;
-    el.style.top = `${startY}px`;
-    el.style.animationDuration = `${duration}s`;
-
-    danmakuStage.appendChild(el);
-    if (isFeatured) featuredEl = el;
-
-    addActiveBox({ el, x: startX, y: startY, radius });
-
-    el.addEventListener('animationend', () => {
-      if (featuredEl === el) featuredEl = null;
-      removeActiveBox(el);
-      el.remove();
-      checkModuleComplete();
+      el.style.setProperty('--tx-a', `${p1.x}px`);
+      el.style.setProperty('--ty-a', `${p1.y}px`);
+      el.style.setProperty('--rot-a', `${rand(-12, 12)}deg`);
+      el.style.setProperty('--tx-b', `${p2.x}px`);
+      el.style.setProperty('--ty-b', `${p2.y}px`);
+      el.style.setProperty('--rot-b', `${rand(-15, 15)}deg`);
+      el.style.setProperty('--tx-c', `${p3.x}px`);
+      el.style.setProperty('--ty-c', `${p3.y}px`);
+      el.style.setProperty('--rot-c', `${rand(-12, 12)}deg`);
+      el.style.setProperty('--tx-d', `${p4.x}px`);
+      el.style.setProperty('--ty-d', `${p4.y}px`);
+      el.style.setProperty('--rot-d', `${rand(-20, 20)}deg`);
+      el.style.setProperty('--scale', `${scale}`);
     });
-
-    return true;
   }
 
-  /* ---------- 模式：心跳弹出 ---------- */
+  /* ---------- 心跳弹出：从中心弹跳着轻微向外移动 ---------- */
   function spawnPop() {
-    const base = createBaseDanmaku();
-    if (!base) return false;
-    const { el, isFeatured } = base;
-
-    const stageWidth = danmakuStage.clientWidth;
-    const stageHeight = danmakuStage.clientHeight;
-    const { width, height } = measureDanmaku(el);
-    const radius = computeRadius(width, height, 'pop');
-
-    /* 在中心附近随机找不重叠的位置 */
-    let cx = stageWidth * rand(0.35, 0.65);
-    let cy = stageHeight * rand(0.25, 0.65);
-    for (let i = 0; i < 30; i++) {
-      cx = stageWidth * rand(0.3, 0.7);
-      cy = stageHeight * rand(0.2, 0.7);
-      if (!overlaps(cx, cy, radius, 'pop')) break;
-    }
-
-    nextComment();
-    updateProgress();
-
-    const duration = rand(CFG.DURATION.pop.min, CFG.DURATION.pop.max);
-
-    el.classList.add('mode-pop');
-    el.style.left = `${cx}px`;
-    el.style.top = `${cy}px`;
-    el.style.animationDuration = `${duration}s`;
-
-    danmakuStage.appendChild(el);
-    if (isFeatured) featuredEl = el;
-
-    addActiveBox({ el, x: cx, y: cy, radius });
-
-    el.addEventListener('animationend', () => {
-      if (featuredEl === el) featuredEl = null;
-      removeActiveBox(el);
-      el.remove();
-      checkModuleComplete();
+    return spawnFromCenter('pop', ({ el, angle, distance }) => {
+      const drift = distance * rand(0.12, 0.25);
+      const tx = Math.cos(angle) * drift;
+      const ty = Math.sin(angle) * drift;
+      el.style.setProperty('--tx', `${tx}px`);
+      el.style.setProperty('--ty', `${ty}px`);
     });
-
-    return true;
   }
 
-  /* ---------- 调度 ---------- */
+  /* ---------- 螺旋飞散：从中心旋转着向外飞出 ---------- */
+  function spawnSpiral() {
+    return spawnFromCenter('spiral', ({ el, angle, distance }) => {
+      const spiralLoops = 2.5;
+      const maxR = distance * rand(0.4, 0.6);
+      const steps = 4;
+      for (let i = 1; i <= steps; i++) {
+        const ratio = i / steps;
+        const r = maxR * ratio;
+        const theta = angle + spiralLoops * ratio * Math.PI * 2;
+        const tx = Math.cos(theta) * r;
+        const ty = Math.sin(theta) * r;
+        const rot = theta * (180 / Math.PI) * 0.6;
+        el.style.setProperty(`--tx-${i}`, `${tx}px`);
+        el.style.setProperty(`--ty-${i}`, `${ty}px`);
+        el.style.setProperty(`--rot-${i}`, `${rot}deg`);
+      }
+    });
+  }
+
   function spawnDanmaku() {
     const mode = getCurrentMode();
     let ok = false;
 
     switch (mode) {
       case 'explode': ok = spawnExplode(); break;
+      case 'bloom': ok = spawnBloom(); break;
       case 'float': ok = spawnFloat(); break;
       case 'pop': ok = spawnPop(); break;
+      case 'spiral': ok = spawnSpiral(); break;
     }
 
-    if (ok) {
-      maybeSwitchMode();
-    }
-
+    if (ok) maybeSwitchMode();
     return ok;
   }
 
@@ -430,7 +395,6 @@
 
     const tick = () => {
       if (hasMoreComments()) {
-        /* 如果同屏弹幕已经很多，先等一会再尝试，避免重叠 */
         if (activeDanmakuCount() >= CFG.MAX_ACTIVE_DANMAKU) {
           danmakuTimer = setTimeout(tick, 500);
           return;
@@ -461,8 +425,6 @@
       commentPool = shuffle(mod.comments);
       poolIndex = 0;
       updateProgress();
-
-      /* 切换模块时重置为爆炸飞散，让节奏更稳 */
       currentModeIndex = 0;
 
       questionPanel.classList.remove('fade-out');
