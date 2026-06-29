@@ -120,14 +120,16 @@
     const sh = danmakuStage.clientHeight;
     const pad = { x: 50, y: 90 };
 
-    // 6 个垂直区域轮流分配
+    // 8 个垂直区域：左右两侧权重更高
     const zones = [
-      { x0: pad.x, x1: sw * 0.30 - w },
-      { x0: sw * 0.15, x1: sw * 0.48 - w },
-      { x0: sw * 0.30, x1: sw * 0.60 - w },
-      { x0: sw * 0.42, x1: sw * 0.72 - w },
-      { x0: sw * 0.60, x1: sw * 0.90 - w },
-      { x0: pad.x, x1: sw - pad.x - w },
+      { x0: pad.x, x1: sw * 0.28 - w },        // 左
+      { x0: pad.x, x1: sw * 0.28 - w },        // 左
+      { x0: sw * 0.12, x1: sw * 0.42 - w },    // 左中
+      { x0: sw * 0.35, x1: sw * 0.65 - w },    // 中
+      { x0: sw * 0.58, x1: sw * 0.88 - w },    // 右中
+      { x0: sw * 0.72, x1: sw - pad.x - w },   // 右
+      { x0: sw * 0.72, x1: sw - pad.x - w },   // 右
+      { x0: pad.x, x1: sw - pad.x - w },       // 全屏（兜底）
     ];
 
     for (let t = 0; t < 60; t++) {
@@ -165,10 +167,10 @@
     const sw = danmakuStage.clientWidth;
     const ratio = (x + w / 2) / sw;
 
-    // 根据水平位置选入场方向
+    // 根据水平位置选入场方向：左右范围放宽，让左右滑入的弹幕更多
     let type;
-    if (ratio < 0.30) type = 'slide-left';
-    else if (ratio > 0.70) type = 'slide-right';
+    if (ratio < 0.45) type = 'slide-left';
+    else if (ratio > 0.55) type = 'slide-right';
     else type = ['rise', 'pop', 'float'][randInt(0, 2)];
 
     el.classList.add(`enter-${type}`);
