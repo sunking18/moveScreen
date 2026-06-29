@@ -11,7 +11,7 @@ html, body {
   height: 100%;
   overflow: hidden;
   font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
-  background: #0f172a;
+  background: #0a0e1a;
   color: #e2e8f0;
 }
 
@@ -24,24 +24,25 @@ html, body {
   overflow: hidden;
 }
 
-/* 深色动态背景 */
+/* 深色动态背景：星空感 */
 .bg-layer {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 15% 15%, rgba(99, 102, 241, 0.22) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 85% 85%, rgba(236, 72, 153, 0.18) 0%, transparent 58%),
-    radial-gradient(ellipse 50% 40% at 50% 50%, rgba(14, 165, 233, 0.12) 0%, transparent 65%),
-    linear-gradient(158deg, #0f172a 0%, #1e1b4b 42%, #312e81 100%);
+    radial-gradient(ellipse 70% 50% at 20% 80%, rgba(99, 102, 241, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 80% 20%, rgba(236, 72, 153, 0.14) 0%, transparent 50%),
+    radial-gradient(ellipse 40% 50% at 50% 50%, rgba(14, 165, 233, 0.10) 0%, transparent 60%),
+    linear-gradient(160deg, #0a0e1a 0%, #0f172a 35%, #1a1040 65%, #0f172a 100%);
   z-index: 0;
-  animation: bg-shift 20s ease-in-out infinite alternate;
+  animation: bg-drift 30s ease-in-out infinite alternate;
 }
 
-@keyframes bg-shift {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(25deg); }
+@keyframes bg-drift {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
 }
 
+/* 星空粒子 */
 .particles {
   position: absolute;
   inset: 0;
@@ -53,79 +54,80 @@ html, body {
 .particle {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
-  animation: float-up linear infinite;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+  animation: twinkle linear infinite;
 }
 
-@keyframes float-up {
-  0% { transform: translateY(100vh) scale(0); opacity: 0; }
-  10% { opacity: 0.8; }
-  90% { opacity: 0.3; }
-  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
 }
 
-/* 顶栏 */
 .header {
   position: relative;
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.2rem 2.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(15, 23, 42, 0.72);
-  backdrop-filter: blur(8px);
+  padding: 1rem 2rem;
+  background: linear-gradient(180deg, rgba(10, 14, 26, 0.95) 0%, rgba(10, 14, 26, 0) 100%);
 }
 
 .logo {
-  font-size: 1.4rem;
+  font-size: 1.1rem;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  color: #fbbf24;
-  text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+  background: linear-gradient(135deg, #a78bfa, #f472b6, #fb923c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.05em;
 }
 
 .module-indicator {
   display: flex;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
 
 .dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  transition: all 0.5s ease;
+  background: rgba(255, 255, 255, 0.2);
+  transition: all 0.4s ease;
 }
 
 .dot.active {
-  background: #f59e0b;
-  box-shadow: 0 0 16px rgba(245, 158, 11, 0.7);
+  background: #a78bfa;
+  box-shadow: 0 0 8px rgba(167, 139, 250, 0.6);
   transform: scale(1.3);
 }
 
 .timer {
-  font-size: 1.4rem;
-  font-weight: 400;
+  font-size: 0.85rem;
+  color: rgba(226, 232, 240, 0.5);
   font-variant-numeric: tabular-nums;
-  color: rgba(226, 232, 240, 0.85);
-  letter-spacing: 0.05em;
 }
 
-/* 主内容 */
 .main {
   position: relative;
   flex: 1;
-  z-index: 5;
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
 }
 
 .question-panel {
-  padding: 2rem 3rem 1.5rem;
+  position: absolute;
+  z-index: 10;
   text-align: center;
+  padding: 1.5rem 3rem;
+  border-radius: 1.2rem;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(167, 139, 250, 0.25);
+  box-shadow: 0 0 40px rgba(167, 139, 250, 0.15);
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
@@ -135,251 +137,305 @@ html, body {
 }
 
 .question-text {
-  font-size: clamp(1.6rem, 3.5vw, 2.8rem);
-  font-weight: 600;
-  line-height: 1.5;
-  color: #f8fafc;
-  text-shadow: 0 0 24px rgba(99, 102, 241, 0.5);
-  max-width: 90%;
-  margin: 0 auto;
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #e2e8f0, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-/* 弹幕舞台 */
+/* 弹幕舞台：全屏 */
 .danmaku-stage {
-  position: relative;
-  flex: 1;
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
   overflow: hidden;
-  mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
 }
+
+/* ========== 弹幕卡片 ========== */
 
 .danmaku-item {
   position: absolute;
-  left: 0;
   white-space: nowrap;
-  font-weight: 500;
+  font-weight: 600;
   pointer-events: none;
   will-change: transform, opacity;
-  padding: 0.45em 1.2em;
-  border-radius: 2em;
-  line-height: 1.4;
-  border: 2px solid transparent;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-/* 爆炸扩散：随机位置快速长大，向附近弹出 */
-.danmaku-item.mode-explode {
+  padding: 0.55em 1.6em;
+  border-radius: 2.5em;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.18),
+    0 0 20px rgba(167, 139, 250, 0.08);
   opacity: 0;
-  animation: danmaku-explode ease-out forwards;
 }
 
-@keyframes danmaku-explode {
+/* 发光拖尾 */
+.danmaku-item::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 100%;
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+  transform: translateY(-50%);
+  opacity: 0;
+}
+
+/* 入场时显示拖尾 */
+.danmaku-item.entering::after {
+  opacity: 1;
+  animation: trail-fade 1.2s ease-out forwards;
+}
+
+@keyframes trail-fade {
+  0% { opacity: 0.8; width: 80px; }
+  100% { opacity: 0; width: 0; }
+}
+
+/* 精选弹幕：更大 + 发光 */
+.danmaku-featured {
+  font-size: 2.2rem !important;
+  padding: 0.6em 2em;
+  border-width: 2px;
+  border-color: rgba(251, 191, 36, 0.6) !important;
+  box-shadow:
+    0 0 30px rgba(251, 191, 36, 0.25),
+    0 0 60px rgba(251, 191, 36, 0.10),
+    0 4px 20px rgba(0, 0, 0, 0.2) !important;
+  z-index: 15 !important;
+}
+
+/* ========== 入场动画 ========== */
+
+/* 从底部升起 + 淡入 */
+.danmaku-item.enter-rise {
+  animation: enter-rise ease-out forwards;
+}
+
+@keyframes enter-rise {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.1);
+    transform: translate(-50%, 30px) scale(0.7);
+    filter: blur(2px);
   }
-  10% {
+  20% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.2);
+    transform: translate(-50%, 0) scale(1.05);
+    filter: blur(0);
   }
-  100% {
-    opacity: 0;
-    transform: translate(
-      calc(-50% + var(--tx, 80px)),
-      calc(-50% + var(--ty, -60px))
-    ) scale(0.65);
-  }
-}
-
-/* 轻柔绽放：随机位置慢慢放大，轻微向外漂移 */
-.danmaku-item.mode-bloom {
-  opacity: 0;
-  animation: danmaku-bloom ease-out forwards;
-}
-
-@keyframes danmaku-bloom {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0);
-  }
-  12% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.15);
+  30% {
+    transform: translate(-50%, 0) scale(0.98);
   }
   40% {
-    opacity: 1;
-    transform: translate(
-      calc(-50% + var(--tx, 50px) * 0.4),
-      calc(-50% + var(--ty, -40px) * 0.4)
-    ) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(
-      calc(-50% + var(--tx, 50px)),
-      calc(-50% + var(--ty, -40px))
-    ) scale(1.25);
-  }
-}
-
-/* 随机漂浮：随机位置小范围漂浮 */
-.danmaku-item.mode-float {
-  opacity: 0;
-  animation: danmaku-float ease-in-out forwards;
-}
-
-@keyframes danmaku-float {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.5);
-  }
-  10% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.05);
-  }
-  25% {
-    transform: translate(
-      calc(-50% + var(--tx-a, 40px)),
-      calc(-50% + var(--ty-a, -30px))
-    ) scale(1);
-  }
-  50% {
-    transform: translate(
-      calc(-50% + var(--tx-b, -30px)),
-      calc(-50% + var(--ty-b, 40px))
-    ) scale(var(--scale, 0.95));
+    transform: translate(-50%, 0) scale(1);
   }
   75% {
-    opacity: 0.85;
-    transform: translate(
-      calc(-50% + var(--tx-c, 30px)),
-      calc(-50% + var(--ty-c, 50px))
-    ) scale(calc(var(--scale, 0.95) * 0.95));
+    opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: translate(
-      calc(-50% + var(--tx-d, -30px)),
-      calc(-50% + var(--ty-d, -20px))
-    ) scale(calc(var(--scale, 0.95) * 0.74));
+    transform: translate(-50%, -60px) scale(0.9);
+    filter: blur(1px);
   }
 }
 
-/* 心跳弹出：随机位置弹跳着轻微向外 */
-.danmaku-item.mode-pop {
-  opacity: 0;
-  animation: danmaku-pop cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+/* 从左侧滑入 */
+.danmaku-item.enter-slide-left {
+  animation: enter-slide-left ease-out forwards;
 }
 
-@keyframes danmaku-pop {
+@keyframes enter-slide-left {
   0% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0);
-  }
-  25% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.25);
-  }
-  45% {
-    transform: translate(
-      calc(-50% + var(--tx, 40px) * 0.2),
-      calc(-50% + var(--ty, -30px) * 0.2)
-    ) scale(0.95);
-  }
-  60% {
-    transform: translate(
-      calc(-50% + var(--tx, 40px) * 0.4),
-      calc(-50% + var(--ty, -30px) * 0.4)
-    ) scale(1.05);
-  }
-  80% {
-    opacity: 1;
-    transform: translate(
-      calc(-50% + var(--tx, 40px) * 0.6),
-      calc(-50% + var(--ty, -30px) * 0.6)
-    ) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(
-      calc(-50% + var(--tx, 40px)),
-      calc(-50% + var(--ty, -30px))
-    ) scale(0.85);
-  }
-}
-
-/* 波纹扩散：随机位置向外放大扩散，无旋转 */
-.danmaku-item.mode-ripple {
-  opacity: 0;
-  animation: danmaku-ripple ease-out forwards;
-}
-
-@keyframes danmaku-ripple {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0);
+    transform: translate(-120%, -50%) scale(0.8);
+    filter: blur(2px);
   }
   15% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1.1);
+    transform: translate(-50%, -50%) scale(1.05);
+    filter: blur(0);
   }
-  45% {
+  25% {
+    transform: translate(-50%, -50%) scale(0.97);
+  }
+  35% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  75% {
     opacity: 1;
-    transform: translate(
-      calc(-50% + var(--tx, 60px) * 0.35),
-      calc(-50% + var(--ty, -40px) * 0.35)
-    ) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(
-      calc(-50% + var(--tx, 60px)),
-      calc(-50% + var(--ty, -40px))
-    ) scale(1.2);
+    transform: translate(20%, -50%) scale(0.9);
   }
 }
 
-/* 精选弹幕 */
-.danmaku-item.danmaku-featured {
-  font-weight: 700;
-  z-index: 30;
-  background: linear-gradient(135deg, rgba(255, 252, 245, 0.98), rgba(255, 243, 220, 0.98));
-  border: 2px solid #f0d8a8;
-  color: #a08050;
-  box-shadow:
-    0 0 24px rgba(240, 200, 140, 0.35),
-    0 4px 18px rgba(0, 0, 0, 0.12);
+/* 从右侧滑入 */
+.danmaku-item.enter-slide-right {
+  animation: enter-slide-right ease-out forwards;
 }
 
-.danmaku-featured.mode-explode {
-  animation: danmaku-explode ease-out forwards, featured-glow 2.5s ease-in-out infinite alternate;
+@keyframes enter-slide-right {
+  0% {
+    opacity: 0;
+    transform: translate(20%, -50%) scale(0.8);
+    filter: blur(2px);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.05);
+    filter: blur(0);
+  }
+  25% {
+    transform: translate(-50%, -50%) scale(0.97);
+  }
+  35% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-120%, -50%) scale(0.9);
+  }
 }
 
-.danmaku-featured.mode-bloom {
-  animation: danmaku-bloom ease-out forwards, featured-glow 2.5s ease-in-out infinite alternate;
+/* 心跳弹出 */
+.danmaku-item.enter-pop {
+  animation: enter-pop cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-.danmaku-featured.mode-float {
-  animation: danmaku-float ease-in-out forwards, featured-glow 2.5s ease-in-out infinite alternate;
+@keyframes enter-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  25% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  55% {
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  70% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.85);
+  }
 }
 
-.danmaku-featured.mode-pop {
-  animation: danmaku-pop cubic-bezier(0.34, 1.56, 0.64, 1) forwards, featured-glow 2.5s ease-in-out infinite alternate;
+/* 漂浮：轻微晃动 */
+.danmaku-item.enter-float {
+  animation: enter-float ease-in-out forwards;
 }
 
-.danmaku-featured.mode-ripple {
-  animation: danmaku-ripple ease-out forwards, featured-glow 2.5s ease-in-out infinite alternate;
+@keyframes enter-float {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.03);
+  }
+  30% {
+    transform: translate(calc(-50% + 8px), calc(-50% - 5px)) scale(1);
+  }
+  50% {
+    transform: translate(calc(-50% - 6px), calc(-50% + 3px)) scale(1);
+  }
+  70% {
+    transform: translate(calc(-50% + 4px), calc(-50% - 2px)) scale(1);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% - 3px), calc(-50% + 8px)) scale(0.9);
+  }
 }
 
-@keyframes featured-glow {
-  from { box-shadow: 0 0 16px rgba(240, 200, 140, 0.25), 0 3px 12px rgba(0, 0, 0, 0.08); }
-  to { box-shadow: 0 0 32px rgba(240, 200, 140, 0.45), 0 3px 18px rgba(0, 0, 0, 0.12); }
+/* ========== 彩色卡片配色 ========== */
+
+.danmaku-item.palette-0 {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.88), rgba(239, 68, 68, 0.55));
+  color: #fff;
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 2px 16px rgba(239, 68, 68, 0.2), 0 0 20px rgba(239, 68, 68, 0.08);
 }
 
-/* 模式指示器（已隐藏） */
-.mode-indicator {
-  display: none;
+.danmaku-item.palette-1 {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.88), rgba(59, 130, 246, 0.55));
+  color: #fff;
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 2px 16px rgba(59, 130, 246, 0.2), 0 0 20px rgba(59, 130, 246, 0.08);
 }
+
+.danmaku-item.palette-2 {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.88), rgba(16, 185, 129, 0.55));
+  color: #fff;
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 2px 16px rgba(16, 185, 129, 0.2), 0 0 20px rgba(16, 185, 129, 0.08);
+}
+
+.danmaku-item.palette-3 {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.88), rgba(168, 85, 247, 0.55));
+  color: #fff;
+  border-color: rgba(168, 85, 247, 0.5);
+  box-shadow: 0 2px 16px rgba(168, 85, 247, 0.2), 0 0 20px rgba(168, 85, 247, 0.08);
+}
+
+.danmaku-item.palette-4 {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.88), rgba(245, 158, 11, 0.55));
+  color: #fff;
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 2px 16px rgba(245, 158, 11, 0.2), 0 0 20px rgba(245, 158, 11, 0.08);
+}
+
+.danmaku-item.palette-5 {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.88), rgba(236, 72, 153, 0.55));
+  color: #fff;
+  border-color: rgba(236, 72, 153, 0.5);
+  box-shadow: 0 2px 16px rgba(236, 72, 153, 0.2), 0 0 20px rgba(236, 72, 153, 0.08);
+}
+
+.danmaku-item.palette-6 {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.88), rgba(6, 182, 212, 0.55));
+  color: #fff;
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 2px 16px rgba(6, 182, 212, 0.2), 0 0 20px rgba(6, 182, 212, 0.08);
+}
+
+.danmaku-item.palette-7 {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.88), rgba(99, 102, 241, 0.55));
+  color: #fff;
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 2px 16px rgba(99, 102, 241, 0.2), 0 0 20px rgba(99, 102, 241, 0.08);
+}
+
+/* 精选弹幕配色覆盖 */
+.danmaku-featured.palette-0 { border-color: rgba(251, 191, 36, 0.6) !important; }
+.danmaku-featured.palette-1 { border-color: rgba(251, 191, 36, 0.6) !important; }
+.danmaku-featured.palette-2 { border-color: rgba(251, 191, 36, 0.6) !important; }
+.danmaku-featured.palette-3 { border-color: rgba(251, 191, 36, 0.6) !important; }
+.danmaku-featured.palette-4 { border-color: rgba(251, 191, 36, 0.6) !important; }
+.danmaku-featured.palette-5 { border-color: rgba(251, 191, 36, 0.6) !important; }
+.danmaku-featured.palette-6 { border-color: rgba(251, 191, 36, 0.6) !important; }
+.danmaku-featured.palette-7 { border-color: rgba(251, 191, 36, 0.6) !important; }
 
 /* 底部 */
 .footer {
@@ -387,9 +443,17 @@ html, body {
   z-index: 10;
   text-align: center;
   padding: 0.8rem;
-  font-size: 0.85rem;
-  color: rgba(226, 232, 240, 0.5);
-  letter-spacing: 0.2em;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.55);
+  font-size: 0.8rem;
+  color: rgba(226, 232, 240, 0.4);
+  background: linear-gradient(0deg, rgba(10, 14, 26, 0.95) 0%, rgba(10, 14, 26, 0) 100%);
+}
+
+/* 光晕效果：弹幕出现时背景微光 */
+.danmaku-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 100%, rgba(167, 139, 250, 0.06) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
 }
