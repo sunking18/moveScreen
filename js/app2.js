@@ -6,8 +6,8 @@
     FONT_SIZE: 1.8,
     FEATURED_FONT_SIZE: 2.4,
     FEATURED_CHANCE: 0.04,
-    GAP: 180,
-    RETRY_MS: 550,
+    GAP: 220,
+    RETRY_MS: 650,
     SPEED: { min: 72, max: 105 },
     LANE_COUNT: 8,
     /* 马卡龙浅色：白底 +  pastel 边框，文字同色系的柔和深调 */
@@ -242,10 +242,14 @@
     stopDanmaku();
     resetLanes();
 
+    // 模块刚开始时，前几条弹幕留出更宽间隔，避免一开始扎堆
+    let initialSpawns = 0;
     const tick = () => {
       if (hasMoreComments()) {
         spawnDanmaku();
-        danmakuTimer = setTimeout(tick, CFG.RETRY_MS);
+        initialSpawns++;
+        const delay = initialSpawns < 4 ? CFG.RETRY_MS * 2 : CFG.RETRY_MS;
+        danmakuTimer = setTimeout(tick, delay);
       } else {
         checkModuleComplete();
       }
