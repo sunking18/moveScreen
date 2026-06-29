@@ -376,35 +376,9 @@ html, body {
   to { box-shadow: 0 0 32px rgba(240, 200, 140, 0.45), 0 3px 18px rgba(0, 0, 0, 0.12); }
 }
 
-/* 模式指示器 */
+/* 模式指示器（已隐藏） */
 .mode-indicator {
-  position: absolute;
-  right: 2rem;
-  bottom: 4rem;
-  z-index: 20;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.4rem;
-  padding: 0.7rem 1.2rem;
-  border-radius: 1rem;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.4s ease;
-}
-
-.mode-label {
-  font-size: 0.75rem;
-  color: rgba(226, 232, 240, 0.6);
-  letter-spacing: 0.1em;
-}
-
-.mode-name {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #fbbf24;
-  text-shadow: 0 0 12px rgba(251, 191, 36, 0.4);
+  display: none;
 }
 
 /* 底部 */

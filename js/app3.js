@@ -1,13 +1,13 @@
 (function () {
   'use strict';
 
-  /* index3 特效大屏配置：每次从屏幕中心弹出 1 条弹幕，向四周扩散，停留 5 秒 */
+  /* index3 特效大屏配置：每次从屏幕中心弹出 1 条弹幕，向四周大幅扩散，停留 8 秒 */
   const CFG = {
     FONT_SIZE: 1.6,
     FEATURED_FONT_SIZE: 2.4,
     FEATURED_CHANCE: 0.05,
-    /* 每 1 秒弹出 1 条，同屏 25 条约 25 秒铺满 */
-    RETRY_MS: 1000,
+    /* 每 1.5 秒弹出 1 条，同屏 25 条约 37 秒铺满 */
+    RETRY_MS: 1500,
     SPAWN_BATCH_MIN: 1,
     SPAWN_BATCH_MAX: 1,
     MAX_ACTIVE_DANMAKU: 25,
@@ -32,11 +32,11 @@
       { bg: 'rgba(240, 242, 255, 0.92)', color: '#5a6fb8', border: '#b8c8ff' },
     ],
     DURATION: {
-      explode: { min: 5, max: 5 },
-      bloom: { min: 5, max: 5 },
-      float: { min: 5, max: 5 },
-      pop: { min: 5, max: 5 },
-      ripple: { min: 5, max: 5 },
+      explode: { min: 8, max: 8 },
+      bloom: { min: 8, max: 8 },
+      float: { min: 8, max: 8 },
+      pop: { min: 8, max: 8 },
+      ripple: { min: 8, max: 8 },
     },
   };
 
@@ -46,7 +46,6 @@
   const timerEl = document.getElementById('timer');
   const dots = document.querySelectorAll('.dot');
   const particlesEl = document.getElementById('particles');
-  const modeNameEl = document.getElementById('modeName');
 
   let currentModuleIndex = 0;
   let danmakuTimer = null;
@@ -153,18 +152,11 @@
     return CFG.MODES[currentModeIndex];
   }
 
-  function updateModeIndicator() {
-    const mode = getCurrentMode();
-    modeNameEl.textContent = CFG.MODE_NAMES[mode];
-    modeNameEl.parentElement.className = 'mode-indicator';
-  }
-
   function maybeSwitchMode() {
     spawnCounter++;
     if (spawnCounter >= CFG.MODE_SWITCH_INTERVAL) {
       spawnCounter = 0;
       currentModeIndex = (currentModeIndex + 1) % CFG.MODES.length;
-      updateModeIndicator();
     }
   }
 
@@ -237,7 +229,7 @@
   /* ---------- 爆炸扩散：从中心快速长大并向外弹出 ---------- */
   function spawnExplode(angle) {
     return spawnAtCenter('explode', ({ el, angle }) => {
-      const { tx, ty } = spreadByAngle(angle, 0.25, 0.55);
+      const { tx, ty } = spreadByAngle(angle, 0.45, 0.85);
       el.style.setProperty('--tx', `${tx}px`);
       el.style.setProperty('--ty', `${ty}px`);
     }, angle);
@@ -246,7 +238,7 @@
   /* ---------- 轻柔绽放：从中心慢慢放大并向外漂移 ---------- */
   function spawnBloom(angle) {
     return spawnAtCenter('bloom', ({ el, angle }) => {
-      const { tx, ty } = spreadByAngle(angle, 0.18, 0.45);
+      const { tx, ty } = spreadByAngle(angle, 0.38, 0.75);
       el.style.setProperty('--tx', `${tx}px`);
       el.style.setProperty('--ty', `${ty}px`);
     }, angle);
@@ -256,7 +248,7 @@
   function spawnFloat(angle) {
     return spawnAtCenter('float', ({ el, angle }) => {
       const scale = rand(0.75, 1.0);
-      const distance = Math.min(danmakuStage.clientWidth, danmakuStage.clientHeight) * rand(0.20, 0.45);
+      const distance = Math.min(danmakuStage.clientWidth, danmakuStage.clientHeight) * rand(0.40, 0.80);
       const baseX = Math.cos(angle);
       const baseY = Math.sin(angle);
 
@@ -275,7 +267,7 @@
   /* ---------- 心跳弹出：从中心弹跳着向外移动 ---------- */
   function spawnPop(angle) {
     return spawnAtCenter('pop', ({ el, angle }) => {
-      const { tx, ty } = spreadByAngle(angle, 0.18, 0.40);
+      const { tx, ty } = spreadByAngle(angle, 0.38, 0.72);
       el.style.setProperty('--tx', `${tx}px`);
       el.style.setProperty('--ty', `${ty}px`);
     }, angle);
@@ -284,7 +276,7 @@
   /* ---------- 波纹扩散：从中心向外放大扩散，无旋转 ---------- */
   function spawnRipple(angle) {
     return spawnAtCenter('ripple', ({ el, angle }) => {
-      const { tx, ty } = spreadByAngle(angle, 0.20, 0.50);
+      const { tx, ty } = spreadByAngle(angle, 0.42, 0.80);
       el.style.setProperty('--tx', `${tx}px`);
       el.style.setProperty('--ty', `${ty}px`);
     }, angle);
